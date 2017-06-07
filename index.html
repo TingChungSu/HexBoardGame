@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>Hex Game</title>
+</head>
+
+<body id="body">
+<div id="text">QQ</div>
+<div id="GameBoard"></div>
+
+<canvas id="canvas"></canvas >
+
+<script type="text/javascript">
+var size = 13;
+var game = [];
+
+var canvas=document.querySelector('#canvas');
+canvas.width=0;
+canvas.height=0;
+var ctx = canvas.getContext('2d');
+var color;
+var end = false;
+initGame();
+
+function initGame(){
+	end = false;
+	document.getElementById("GameBoard").remove();
+	var div = document.createElement('div');
+	div.id = "GameBoard";
+	document.getElementById("body").appendChild(div);
+	
+	document.getElementById("text").innerText = "Red First."
+	
+	color = "Red"
+	drawBoard(ctx,size);
+	
+	for(i=0;i<game.length;i++){
+		game.pop();
+	}
+	for(i=0;i<size;i++){
+		var tmp = [];
+		for(j=0;j<size;j++){
+			if(i==0 || i==size-1)
+				tmp.push("Blue");
+			else if(j==0 || j==size-1)
+				tmp.push("Red");
+			else
+				tmp.push("");
+		}
+		game.push(tmp);
+		
+	}
+}
+
+function drawBoard(ctx,size){
+	var oriX = 0, oriY = 50, r = 18;
+	var space = 6;
+	var x = oriX, y = oriY;
+
+	for(j=0;j<size;j++){
+		for(i=0;i<size;i++){
+			drawHex(ctx, r,
+			(size+1)/2 * (Math.sqrt(3)* r + space)+x*Math.cos(1/3*Math.PI)-y*Math.sin(1/3*Math.PI),
+			x*Math.sin(1/3*Math.PI)+y*Math.cos(1/3*Math.PI),
+			i,j);
+			x += Math.sqrt(3)*r+space;
+		}
+		y += Math.sqrt(2)*r+space;
+		x = x - (size-0.5) * (Math.sqrt(3)* r + space);
+	}
+	/*
+	Math.sin((k*60)/180*Math.PI)
+	for(j=0;j<size;j++){
+		for(i=0;i<size;i++){
+			drawHex(ctx, r,x,y,i,j);
+			x += Math.sqrt(3)*r+space;
+		}
+		y += Math.sqrt(3)*r;
+		x = x - (size-0.5) * (Math.sqrt(3)* r + space);
+	}
+	
+	*/
+}
+
+function drawHex(ctx, r, x, y, i, j){
+	if((i==0 && j==0) || (i==size-1 && j==size-1)
+	||(i==size-1 && j==0)||(i==0 && j==size-1)
+	){
+		return;
+	}
+	
+	var canvas = document.createElement('canvas');
+	canvas.id = "pix"+j+"_"+i;
+	canvas.style="position:absolute; top:"+y+"px; left:"+x+"px;";
+	canvas.width = 2*r;
+	canvas.height = 2*r;
+	var ctx = canvas.getContext('2d');
+	
+	
+	ctx.save();
+	ctx.translate(r,r);
+	ctx.rotate(Math.PI/2);
+	ctx.beginPath();
+	for(var k = 0; k < 6; k++){
+		ctx.lineTo(Math.cos((k*60)/180*Math.PI)*r,
+
+				Math.sin((k*60)/180*Math.PI)*r);
+	}
+	if(i==0 || i==size-1){
+		ctx.fillStyle  = "Red";
+		ctx.fill();
+	}
+	if(j==0 || j==size-1){
+		ctx.fillStyle  = "Blue";
+		ctx.fill();
+	}
+	ctx.closePath();
+	ctx.stroke();
+	ctx.restore();
+	canvas.addEventListener('click', function() {
+		click(j,i,canvas.id);
+	}, false);
+	div = document.getElementById('GameBoard');
+	div.appendChild(canvas);
+}
+function click(x,y,id){
+	if(end)
+		return;
+	if(game[x][y] != "")
+		return;
+	//var canvas=document.querySelector("#pix"+x+"_"+y);
+	var canvas=document.querySelector("#"+id);
+	var ctx = canvas.getContext('2d');
+	game[x][y] = color;
+	ctx.fillStyle  = color;
+	ctx.fill();
+	if(isEnd(x,y)){
+		end = true;
+		
+		document.getElementById("text").innerText = color +" win!!!!"
+	}
+	else{
+		if("Red" == color){
+			color = "Blue";
+		}else{
+			color = "Red";
+		}
+		document.getElementById("text").innerText ="It's "+ color +" turn."
+	}
+}
+
+function isEnd(x,y){
+	var tmpboard = [];
+	for(var i=0;i<size;i++){
+		var tmp = [];
+		for(var j=0;j<size;j++){
+			tmp.push("");
+		}
+		tmpboard.push(tmp);
+	}
+	var thisColor = game[x][y];
+	tmpboard[x][y] = thisColor;
+	var checkQueue = new Array();
+	checkQueue.push([x,y]);
+	console.log(thisColor);
+	var top=false;
+	var bottom=false;
+	var left=false;
+	var right=false;
+	while(checkQueue.length > 0 ){
+		var pos = checkQueue.pop();
+		console.log(pos[0]+","+pos[1]);
+		tmpboard[pos[0]][pos[1]] = thisColor;
+		if(pos[0] == 0){
+			top=true;
+			continue;
+		}
+		if(pos[0] == size-1){
+			bottom=true;
+			continue;
+		}
+		if(pos[1]==0){
+			left=true;
+			continue;
+		}
+		if(pos[1] == size-1){
+			right=true;
+			continue;
+		}
+		if(tmpboard[pos[0]-1][pos[1]] == ""
+		&& game[pos[0]-1][pos[1]] == thisColor)
+				checkQueue.push([pos[0]-1, pos[1]]);
+		if(tmpboard[pos[0]-1][pos[1]+1] == ""
+		&& game[pos[0]-1][pos[1]+1] == thisColor)
+				checkQueue.push([pos[0]-1, pos[1]+1]);
+		if(tmpboard[pos[0]][pos[1]-1] == ""
+		&& game[pos[0]][pos[1]-1] == thisColor)
+				checkQueue.push([pos[0], pos[1]-1]);
+		if(tmpboard[pos[0]][pos[1]+1] == ""
+		&& game[pos[0]][pos[1]+1] == thisColor)
+				checkQueue.push([pos[0], pos[1]+1]);
+		if(tmpboard[pos[0]+1][pos[1]] == ""
+		&& game[pos[0]+1][pos[1]] == thisColor)
+				checkQueue.push([pos[0]+1, pos[1]]);
+		if(tmpboard[pos[0]+1][pos[1]-1] == ""
+		&& game[pos[0]+1][pos[1]-1] == thisColor)
+				checkQueue.push([pos[0]+1, pos[1]-1]);
+	}
+	if(thisColor=="Red" && left && right)
+		return true;
+	if(thisColor=="Blue" && top && bottom)
+		return true;
+	return false;
+}
+
+function showBoard(board){
+	for(var i=0;i<board.lenth;i++)
+		console.log(board[i]);
+}
+
+Element.prototype.remove = function() {
+    this.parentElement.removeChild(this);
+}
+NodeList.prototype.remove = HTMLCollection.prototype.remove = function() {
+    for(var i = this.length - 1; i >= 0; i--) {
+        if(this[i] && this[i].parentElement) {
+            this[i].parentElement.removeChild(this[i]);
+        }
+    }
+}
+
+</script>
+
+</body>
+</html>
