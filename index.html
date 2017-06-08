@@ -81,6 +81,7 @@ function initGame(){
 	document.getElementById("body").appendChild(div);
 	
 	myText = document.getElementById("Title");
+	myText.style.color = "white";
 	myText.innerText = "Red First."
 	
 	color = "Red"
@@ -212,7 +213,9 @@ function click(x,y,id){
 	if(isEnd(x,y)){
 		end = true;
 		
+		myText.style.color = color;
 		myText.innerText = color +" win!!!!"
+		
 		setTimeout(function(){ flash(color,"gray",11);}, 100);
 	}
 	else{
