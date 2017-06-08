@@ -2,12 +2,44 @@
 
 <html>
 <head>
-<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-<title>Hex Game</title>
+	<title>Hex Game</title>
+	<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <!-- Bootstrap core CSS -->
+    <link href="./bootstrap-3.3.6-dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Bootstrap theme -->
+    <link href="./bootstrap-3.3.6-dist/css/bootstrap-theme.min.css" rel="stylesheet">
+	
+    <link href="./hex.css" rel="stylesheet">
 </head>
-<button onclick = "initGame();">restart </button>
-<body id="body">
-<div id="text">QQ</div>
+
+<body id="body" role = "document" onselectstart="return false;" oncontextmenu="window.event.returnValue=false" >
+
+	<!-- Fixed navbar -->
+    <nav class="navbar navbar-inverse navbar-fixed-top">
+	<div class="container">
+		<div class="navbar-header">
+			<button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false" aria-controls="navbar">
+				<span class="sr-only">Toggle navigation</span>
+				<span class="icon-bar"></span>
+				<span class="icon-bar"></span>
+				<span class="icon-bar"></span>
+			</button>
+			<a id="Title" class="navbar-brand" href="#">Hex Board Game</a>
+		</div>
+		<div id="navbar" class="navbar-collapse collapse">
+			<ul class="nav navbar-nav">
+				<li><a onclick="initGame();">Start</a></li>
+				<li><a onclick="help();">About</a></li>
+
+			</ul>
+		</div><!--/.nav-collapse -->
+	</div>
+    </nav>
+
+
+<div>
+	<div id="text"></div>
+</div>
 <div id="GameBoard"></div>
 
 <canvas id="canvas"></canvas >
@@ -16,21 +48,18 @@
 var size = 13;
 var game = [];
 var r = 15;
+var myText;
 
-var canvas=document.querySelector('#canvas');
-canvas.width=0;
-canvas.height=0;
-var ctx = canvas.getContext('2d');
 var color;
 var end = false;
 initGame();
 
 function initGame(){
-	alert("width:"+window.innerWidth
-	+"\nheight:"+window.innerHeight);
+	//alert("width:"+window.innerWidth
+	//+"\nheight:"+window.innerHeight);
 	
-	var RRRRR = Math.min((window.innerHeight-50)/(size-2)/3 * 0.75 , (window.innerWidth)/(size-1)/Math.sqrt(3) * 0.75);
-	r =RRRRR;
+	var RRRRR = Math.min((window.innerHeight-80)/(size-2)/3 * 0.75 , (window.innerWidth)/(size-1)/Math.sqrt(3) * 0.75);
+	r = RRRRR;
 
 	console.log("initGame");
 	end = false;
@@ -39,10 +68,11 @@ function initGame(){
 	div.id = "GameBoard";
 	document.getElementById("body").appendChild(div);
 	
-	document.getElementById("text").innerText = "Red First."
+	myText = document.getElementById("Title");
+	myText.innerText = "Red First."
 	
 	color = "Red"
-	drawBoard(ctx,size);
+	drawBoard(size);
 	
 	var gamelength = game.length;
 	for(var i=0;i<gamelength;i++){
@@ -63,16 +93,16 @@ function initGame(){
 	}
 }
 
-function drawBoard(ctx,size){
+function drawBoard(size){
 	var oriX = 0, oriY = 50;
 	var space = r/3;
-	var x = oriX, y = oriY;
+	var x = oriX, y = 0;
 
 	for(j=0;j<size;j++){
 		for(i=0;i<size;i++){
-			drawHex(ctx, r,
-			(size+2)/2 * (Math.sqrt(3)* r + space)+x*Math.cos(1/3*Math.PI)-y*Math.sin(1/3*Math.PI),
-			x*Math.sin(1/3*Math.PI)+y*Math.cos(1/3*Math.PI),
+			drawHex(r,
+			(size)/2 * (Math.sqrt(3)* r + space)+x*Math.cos(1/3*Math.PI)-y*Math.sin(1/3*Math.PI),
+			oriY+x*Math.sin(1/3*Math.PI)+y*Math.cos(1/3*Math.PI),
 			i,j);
 			x += Math.sqrt(3)*r+space;
 		}
@@ -93,7 +123,7 @@ function drawBoard(ctx,size){
 	*/
 }
 
-function drawHex(ctx, r, x, y, i, j){
+function drawHex(r, x, y, i, j){
 	if((i==0 && j==0) || (i==size-1 && j==size-1)
 	||(i==size-1 && j==0)||(i==0 && j==size-1)
 	){
@@ -148,7 +178,7 @@ function click(x,y,id){
 	if(isEnd(x,y)){
 		end = true;
 		
-		document.getElementById("text").innerText = color +" win!!!!"
+		myText.innerText = color +" win!!!!"
 	}
 	else{
 		if("Red" == color){
@@ -156,7 +186,7 @@ function click(x,y,id){
 		}else{
 			color = "Red";
 		}
-		document.getElementById("text").innerText ="It's "+ color +" turn."
+		myText.innerText ="It's "+ color +" turn."
 	}
 }
 
@@ -229,6 +259,33 @@ function showBoard(board){
 		console.log(board[i]);
 }
 
+function help(){
+	var strText = 
+	"Press F2 or Start button to start a new Game."
+	+"\n\n"+
+	"Open up all the non-bomb blocks as soon as possible."
+	+"\n\n"+
+	"LeftClick to uncover an empty square."
+	+"\n"+
+	"(Be careful, if you uncover a bomb, and the game ends.)"
+	+"\n\n"+
+	"MiddleClick on the number can open its block within the 3X3 matrix."
+	+"\n"+
+	"(Will not open blocks marked as bombs)."
+	+"\n\n"+
+	"RightClick to mark or unmark a square as a bomb. "
+	+"\n\n"+
+	"White Square is an empty square."
+	+"\n\n"+
+	"Red Square is a square you mark as a bomb."
+	+"\n\n"+
+	"Yellow Square is a bomb.(You won't see it until you lose.)"
+	+"\n\n"+
+	"Blue Square is a square you marked as a bomb but it is not."
+	window.alert(strText);
+}
+
+
 Element.prototype.remove = function() {
     this.parentElement.removeChild(this);
 }
@@ -241,6 +298,7 @@ NodeList.prototype.remove = HTMLCollection.prototype.remove = function() {
 }
 
 </script>
-
+<script src="./jquery-1.12.0.min.js"></script>
+<script src="./bootstrap-3.3.6-dist/js/bootstrap.min.js"></script>
 
 </html>
