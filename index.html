@@ -69,8 +69,6 @@ function setDifficulty(){
 }
 
 function initGame(){
-	//alert("width:"+window.innerWidth
-	//+"\nheight:"+window.innerHeight);
 	
 	var RRRRR = Math.min((window.innerHeight-100)/(size-2)/3 * 0.75 , (window.innerWidth)/(size-1)/Math.sqrt(3) * 0.75);
 	r = RRRRR;
@@ -137,6 +135,27 @@ function drawBoard(size){
 	
 	*/
 }
+function flash(color,target,times){
+	times--;
+	if(times > 0){
+		for(var i=0;i<size;i++){
+			for(j=0;j<size;j++){
+				if(game[i][j] == color){
+					game[i][j] = target;
+					var canvas = document.querySelector("#pix"+i+"_"+j);
+					if(canvas){
+						var ctx = canvas.getContext('2d');
+						//game[x][y] = color;
+						ctx.fillStyle  = target;
+						ctx.fill();
+					}
+				}
+			}
+		}
+		
+		setTimeout(function(){flash(target,color,times);}, 500);
+	}
+}
 
 function drawHex(r, x, y, i, j){
 	if((i==0 && j==0) || (i==size-1 && j==size-1)
@@ -194,6 +213,7 @@ function click(x,y,id){
 		end = true;
 		
 		myText.innerText = color +" win!!!!"
+		setTimeout(function(){ flash(color,"purple",11);}, 500);
 	}
 	else{
 		if("Red" == color){
