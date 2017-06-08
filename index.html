@@ -11,10 +11,11 @@
 <div id="GameBoard"></div>
 
 <canvas id="canvas"></canvas >
-
+</body>
 <script type="text/javascript">
 var size = 13;
 var game = [];
+var r = 15;
 
 var canvas=document.querySelector('#canvas');
 canvas.width=0;
@@ -25,6 +26,12 @@ var end = false;
 initGame();
 
 function initGame(){
+	alert("width:"+window.innerWidth
+	+"\nheight:"+window.innerHeight);
+	
+	var RRRRR = Math.min((window.innerHeight-50)/(size-2)/3 * 0.75 , (window.innerWidth)/(size-1)/Math.sqrt(3) * 0.75);
+	r =RRRRR;
+
 	console.log("initGame");
 	end = false;
 	document.getElementById("GameBoard").remove();
@@ -57,14 +64,14 @@ function initGame(){
 }
 
 function drawBoard(ctx,size){
-	var oriX = 0, oriY = 50, r = 18;
-	var space = 6;
+	var oriX = 0, oriY = 50;
+	var space = r/3;
 	var x = oriX, y = oriY;
 
 	for(j=0;j<size;j++){
 		for(i=0;i<size;i++){
 			drawHex(ctx, r,
-			(size+1)/2 * (Math.sqrt(3)* r + space)+x*Math.cos(1/3*Math.PI)-y*Math.sin(1/3*Math.PI),
+			(size+2)/2 * (Math.sqrt(3)* r + space)+x*Math.cos(1/3*Math.PI)-y*Math.sin(1/3*Math.PI),
 			x*Math.sin(1/3*Math.PI)+y*Math.cos(1/3*Math.PI),
 			i,j);
 			x += Math.sqrt(3)*r+space;
@@ -96,8 +103,8 @@ function drawHex(ctx, r, x, y, i, j){
 	var canvas = document.createElement('canvas');
 	canvas.id = "pix"+j+"_"+i;
 	canvas.style="position:absolute; top:"+y+"px; left:"+x+"px;";
-	canvas.width = 2*r;
-	canvas.height = 2*r;
+	canvas.width = 2*r+1;
+	canvas.height = 2*r+1;
 	var ctx = canvas.getContext('2d');
 	
 	
@@ -106,9 +113,9 @@ function drawHex(ctx, r, x, y, i, j){
 	ctx.rotate(Math.PI/2);
 	ctx.beginPath();
 	for(var k = 0; k < 6; k++){
-		ctx.lineTo(Math.cos((k*60)/180*Math.PI)*r,
+		ctx.lineTo(Math.cos(k/3*Math.PI)*r,
 
-				Math.sin((k*60)/180*Math.PI)*r);
+				Math.sin(k/3*Math.PI)*r);
 	}
 	if(i==0 || i==size-1){
 		ctx.fillStyle  = "Red";
@@ -235,5 +242,5 @@ NodeList.prototype.remove = HTMLCollection.prototype.remove = function() {
 
 </script>
 
-</body>
+
 </html>
