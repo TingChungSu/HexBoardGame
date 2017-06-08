@@ -24,19 +24,23 @@
 				<span class="icon-bar"></span>
 				<span class="icon-bar"></span>
 			</button>
-			<a id="Title" class="navbar-brand" href="#">Hex Board Game</a>
+			<a id="Title" class="navbar-brand" href="#" style="font-size: 125%">Hex Board Game</a>
 		</div>
 		<div id="navbar" class="navbar-collapse collapse">
 			<ul class="nav navbar-nav">
 				<li><a onclick="initGame();">Start</a></li>
 				<li><a onclick="help();">About</a></li>
-
+				<li class="dropdown">
+					<a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Setting <span class="caret"></span></a>
+					<ul class="dropdown-menu">
+						<li class="btn-default ">Size:<input type="number" value = 10 id = "number" min="5" max="15"></li>
+						<li class="btn-primary" onclick="setDifficulty();initGame();">Start</li>
+					</ul>
+				</li>
 			</ul>
 		</div><!--/.nav-collapse -->
 	</div>
     </nav>
-
-
 <div>
 	<div id="text"></div>
 </div>
@@ -44,6 +48,8 @@
 
 <canvas id="canvas"></canvas >
 </body>
+<script src="./jquery-1.12.0.min.js"></script>
+<script src="./bootstrap-3.3.6-dist/js/bootstrap.min.js"></script>
 <script type="text/javascript">
 var size = 13;
 var game = [];
@@ -54,11 +60,19 @@ var color;
 var end = false;
 initGame();
 
+function setDifficulty(){
+	var num = parseInt(document.getElementById("number").value);
+	if(num <5 || num >15)
+		alert("set size between 5 and 20 please.");
+	else
+		size = 2 + num;
+}
+
 function initGame(){
 	//alert("width:"+window.innerWidth
 	//+"\nheight:"+window.innerHeight);
 	
-	var RRRRR = Math.min((window.innerHeight-80)/(size-2)/3 * 0.75 , (window.innerWidth)/(size-1)/Math.sqrt(3) * 0.75);
+	var RRRRR = Math.min((window.innerHeight-100)/(size-2)/3 * 0.75 , (window.innerWidth)/(size-1)/Math.sqrt(3) * 0.75);
 	r = RRRRR;
 
 	console.log("initGame");
@@ -97,12 +111,13 @@ function drawBoard(size){
 	var oriX = 0, oriY = 50;
 	var space = r/3;
 	var x = oriX, y = 0;
-
+	//var xOffset = (size)/2 * (Math.sqrt(3)* r + space);
+	var xOffset = (window.innerWidth-3*r)/2;
 	for(j=0;j<size;j++){
 		for(i=0;i<size;i++){
 			drawHex(r,
-			(size)/2 * (Math.sqrt(3)* r + space)+x*Math.cos(1/3*Math.PI)-y*Math.sin(1/3*Math.PI),
-			oriY+x*Math.sin(1/3*Math.PI)+y*Math.cos(1/3*Math.PI),
+			xOffset + x*Math.cos(1/3*Math.PI)-y*Math.sin(1/3*Math.PI),
+			oriY - r + x*Math.sin(1/3*Math.PI)+y*Math.cos(1/3*Math.PI),
 			i,j);
 			x += Math.sqrt(3)*r+space;
 		}
@@ -263,25 +278,14 @@ function help(){
 	var strText = 
 	"Press F2 or Start button to start a new Game."
 	+"\n\n"+
-	"Open up all the non-bomb blocks as soon as possible."
+	"Players alternate placing stones on unoccupied spaces "
+	+
+	"in an attempt to link their opposite sides of "
+	+
+	"the board in an unbroken chain."
 	+"\n\n"+
-	"LeftClick to uncover an empty square."
-	+"\n"+
-	"(Be careful, if you uncover a bomb, and the game ends.)"
-	+"\n\n"+
-	"MiddleClick on the number can open its block within the 3X3 matrix."
-	+"\n"+
-	"(Will not open blocks marked as bombs)."
-	+"\n\n"+
-	"RightClick to mark or unmark a square as a bomb. "
-	+"\n\n"+
-	"White Square is an empty square."
-	+"\n\n"+
-	"Red Square is a square you mark as a bomb."
-	+"\n\n"+
-	"Yellow Square is a bomb.(You won't see it until you lose.)"
-	+"\n\n"+
-	"Blue Square is a square you marked as a bomb but it is not."
+	"LeftClick an empty space to place your stones."
+	+"\n\n"
 	window.alert(strText);
 }
 
@@ -296,9 +300,15 @@ NodeList.prototype.remove = HTMLCollection.prototype.remove = function() {
         }
     }
 }
-
+$(document).ready(function(){ 
+	$(window).keydown(function(event){
+		console.log("key "+event.keyCode+" pressed.");
+		//press f2
+		if(event.keyCode == 113){
+			initGame();
+		}
+	});
+});
 </script>
-<script src="./jquery-1.12.0.min.js"></script>
-<script src="./bootstrap-3.3.6-dist/js/bootstrap.min.js"></script>
 
 </html>
