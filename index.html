@@ -25,6 +25,7 @@ var end = false;
 initGame();
 
 function initGame(){
+	console.log("initGame");
 	end = false;
 	document.getElementById("GameBoard").remove();
 	var div = document.createElement('div');
@@ -36,10 +37,11 @@ function initGame(){
 	color = "Red"
 	drawBoard(ctx,size);
 	
-	for(i=0;i<game.length;i++){
+	var gamelength = game.length;
+	for(var i=0;i<gamelength;i++){
 		game.pop();
 	}
-	for(i=0;i<size;i++){
+	for(var i=0;i<size;i++){
 		var tmp = [];
 		for(j=0;j<size;j++){
 			if(i==0 || i==size-1)
