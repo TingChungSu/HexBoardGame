@@ -28,7 +28,14 @@
 		</div>
 		<div id="navbar" class="navbar-collapse collapse">
 			<ul class="nav navbar-nav">
-				<li><a onclick="initGame();">Start</a></li>
+				<li><a onclick="createRoom();">NewGame</a></li>
+				<li class="dropdown">
+					<a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Enter <span class="caret"></span></a>
+					<ul class="dropdown-menu">
+						<li class="btn-default ">RoomId:<input type="number" id = "roomId"></li>
+						<li class="btn-primary" onclick="enterRoom();">Enter</li>
+					</ul>
+				</li>
 				<li><a onclick="help();">About</a></li>
 				<li class="dropdown">
 					<a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Setting <span class="caret"></span></a>
@@ -51,10 +58,13 @@
 <script src="./jquery-1.12.0.min.js"></script>
 <script src="./bootstrap-3.3.6-dist/js/bootstrap.min.js"></script>
 <script type="text/javascript">
+var myColor = "Red";
+var myTurn = false;
 var size = 12;
 var game = [];
 var r = 15;
 var myText;
+var ws;
 
 var color;
 var end = false;
@@ -198,7 +208,19 @@ function drawHex(r, x, y, i, j){
 	div = document.getElementById('GameBoard');
 	div.appendChild(canvas);
 }
+
 function click(x,y,id){
+	if(myTurn){
+		clicks(x,y,id,true);
+		ws.send("<Place>"+x+"_"+y);
+	}
+	myTurn = false;
+}
+
+function clicks(x,y,id,go){
+	console.log(x+"\n"+y+"\n"+id+"\n");
+	if(!go)
+		return;
 	if(end)
 		return;
 	if(game[x][y] != "")
@@ -225,6 +247,7 @@ function click(x,y,id){
 		}
 		myText.innerText ="It's "+ color +" turn."
 	}
+	myTurn = true;
 }
 
 function isEnd(x,y){
@@ -310,6 +333,55 @@ function help(){
 	+"\n\n"
 	window.alert(strText);
 }
+
+function createRoom() {
+	myColor = "Red";
+	ws=new WebSocket('ws://10.0.1.167:8080');
+	ws.onopen=function(e){
+		console.log("Server > connection open.");
+		ws.send('<NewGame>');
+	};
+	ws.onmessage=function(e){
+		console.log(e.data);
+		if(e.data.startsWith("#GameStart")){
+			myText.innerText ="Red(You) first."
+			myTurn = true;
+		}else if(e.data.startsWith("#NewGame")){
+			myText.innerText ="RoomId: " + e.data.substring(8);
+		}else if(e.data.startsWith("#Place")){
+			clicks(e.data.substring(6,e.data.indexOf("_")),e.data.substring(1+e.data.indexOf("_")),"pix"+e.data.substring(6),true);
+		}
+	};
+	ws.onerror=function(e){
+		console.log(e.data);
+	};
+	ws.onclose=function(e){
+		console.log("Server > connection closed by server.");
+	};
+}
+function enterRoom() {
+	myColor = "Blue";
+	ws=new WebSocket('ws://10.0.1.167:8080');
+	ws.onopen=function(e){
+		console.log("Server > connection open.");
+		ws.send('<EnterGame>'+document.getElementById("roomId").value);
+	};
+	ws.onmessage=function(e){
+		console.log(e.data);
+		if(e.data.startsWith("#GameStart")){
+			myText.innerText ="Red(Enemy) first."
+		}else if(e.data.startsWith("#Place")){
+			clicks(e.data[6],e.data[8],"pix"+e.data.substring(6),true);
+		}
+	};
+	ws.onerror=function(e){
+		console.log(e.data);
+	};
+	ws.onclose=function(e){
+		console.log("Server > connection closed by server.");
+	};
+}
+
 
 
 Element.prototype.remove = function() {
