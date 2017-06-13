@@ -1,13 +1,16 @@
 html {
-	min-width:480px; 
     background-color: #eeeeee;
     font-family: 'Arimo', sans-serif;
 }
 nav{
-	min-width:480px;%;
 }
 div{
 	font-size: 125%;
+}
+.fixed {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
 }
 
 hr {
