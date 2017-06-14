@@ -1,6 +1,7 @@
 var HexProject = HexProject || {};
 HexProject.namespace = {
-    url : '140.116.247.163:8080',
+    url : '10.0.1.167:8080',
+	//url : '140.116.247.163:8080',
 	myColor : 'Red',
 	myTurn : false,
 	size : 12,
@@ -13,6 +14,10 @@ HexProject.namespace = {
 	lastx : 0,
 	lasty : 0,
 	lastcolor : null,
+	canUndo : false,
+	btnUndo : null,
+	btnSurrender : null,
+	btnRestart : null,
 	
     setDifficulty : function(){ 
 		var num = parseInt(document.getElementById("number").value);
@@ -31,7 +36,6 @@ HexProject.namespace = {
 		div.id = "GameBoard";
 		document.getElementById("body").appendChild(div);
 		
-		HexProject.namespace.color = "Red"
 		HexProject.namespace.drawBoard(size);
 	},
 	resize : function(){ 
@@ -49,6 +53,15 @@ HexProject.namespace = {
 			HexProject.namespace.fillColor(HexProject.namespace.lastx,HexProject.namespace.lasty,HexProject.namespace.lastcolor);
 	},
 	initGame : function(){ 
+		HexProject.namespace.color = 'Red';
+		HexProject.namespace.btnUndo = document.getElementById("undo");
+		HexProject.namespace.btnSurrender = document.getElementById("surrender");
+		HexProject.namespace.btnRestart = document.getElementById("restart"); 
+		
+		HexProject.namespace.btnUndo.disabled = true; 
+		HexProject.namespace.btnSurrender.disabled = true; 
+		HexProject.namespace.btnRestart.disabled = true; 
+		
 		var size = HexProject.namespace.size;
 		console.log("initGame");
 		HexProject.namespace.redraw();
@@ -57,10 +70,16 @@ HexProject.namespace = {
 		HexProject.namespace.myText.style.color = "white";
 		HexProject.namespace.myText.innerText = "NewGame or Enter."
 		
-		var gamelength = HexProject.namespace.game.length;
-		for(var i=0;i<gamelength;i++){
-			HexProject.namespace.game.pop();
-		}
+		HexProject.namespace.myColor = 'Red';
+		HexProject.namespace.myTurn = false;
+
+		HexProject.namespace.end = false;
+		HexProject.namespace.lastx = 0;
+		HexProject.namespace.lasty = 0;
+		HexProject.namespace.lastcolor = null;
+		HexProject.namespace.canUndo = false;
+
+		HexProject.namespace.game = [];
 		for(var i=0;i<size;i++){
 			var tmp = [];
 			for(j=0;j<size;j++){
@@ -157,6 +176,10 @@ HexProject.namespace = {
 		div.appendChild(canvas);
 	},
 	click : function (x,y,id){
+		if(HexProject.namespace.end)
+			return;
+		if(HexProject.namespace.game[x][y] != "")
+			return;
 		if(HexProject.namespace.myTurn){
 			HexProject.namespace.clicks(x,y,id,false);
 			HexProject.namespace.ws.send("<Place>"+x+"_"+y);
@@ -186,7 +209,6 @@ HexProject.namespace = {
 		var canvas = document.querySelector("#pix"+x+"_"+y);
 		if(canvas){
 			var ctx = canvas.getContext('2d');
-			HexProject.namespace.game[x][y] = color;
 			ctx.fillStyle  = color;
 			ctx.fill();
 		}
@@ -199,7 +221,7 @@ HexProject.namespace = {
 		//var canvas=document.querySelector("#pix"+x+"_"+y);
 		HexProject.namespace.fillColor(x,y,HexProject.namespace.color);
 		if(HexProject.namespace.isEnd(x,y)){
-			HexProject.namespace.end = true;
+			HexProject.namespace.gameEnd();
 			HexProject.namespace.myText.style.color = HexProject.namespace.color;
 			HexProject.namespace.myText.innerText = HexProject.namespace.color +" win!!!!"
 			setTimeout(function(){ HexProject.namespace.flash(HexProject.namespace.color,"gray",11);}, 100);
@@ -212,8 +234,21 @@ HexProject.namespace = {
 			}
 			var who = canAction?'your':'enemy';
 			HexProject.namespace.myText.innerText ="It's "+ who +" turn.(" + HexProject.namespace.color + ")"
+			if(!canAction){
+				HexProject.namespace.canUndo = true;
+				HexProject.namespace.btnUndo.disabled = false; 
+			}else{
+				HexProject.namespace.canUndo = false;
+				HexProject.namespace.btnUndo.disabled = true; 
+			}
 		}
 		HexProject.namespace.myTurn = canAction;
+	},
+	gameEnd : function (){
+		HexProject.namespace.btnSurrender.disabled = true;
+		HexProject.namespace.btnUndo.disabled = true;
+		HexProject.namespace.end = true;
+		HexProject.namespace.btnRestart.disabled = false;
 	},
 	isEnd : function (x,y){
 		var size = HexProject.namespace.size;
@@ -308,17 +343,11 @@ HexProject.namespace = {
 			if(e.data.startsWith("#GameStart")){
 				HexProject.namespace.myText.innerText ="You first.(Red)"
 				HexProject.namespace.myTurn = true;
+				HexProject.namespace.btnSurrender.disabled = false;
 			}else if(e.data.startsWith("#NewGame")){
 				HexProject.namespace.myText.innerText ="RoomId: " + e.data.substring(8);
-			}else if(e.data.startsWith("#Place")){
-				var xxx = parseInt(e.data.substring(6, e.data.indexOf("_")));
-				var yyy = parseInt(e.data.substring(1 + e.data.indexOf("_")));
-				HexProject.namespace.clicks(xxx, yyy, "pix" + e.data.substring(6), true);
-			}else if(e.data.startsWith("#EnemyGiveUp")){
-				HexProject.namespace.myText.innerText ="Enemy Give up."
-			}else if(e.data.startsWith("#Undo")){
-				HexProject.namespace.undo();
 			}
+			HexProject.namespace.serverMsgCheck(e);
 		};
 		HexProject.namespace.ws.onerror = function(e){
 			console.log(e.data);
@@ -327,6 +356,27 @@ HexProject.namespace = {
 			console.log("connection closed by server.");
 			console.log(e.data);
 		};
+	},
+	serverMsgCheck : function (e) {
+		if(e.data.startsWith("#Place")){
+			var xxx = parseInt(e.data.substring(6, e.data.indexOf("_")));
+			var yyy = parseInt(e.data.substring(1 + e.data.indexOf("_")));
+			HexProject.namespace.clicks(xxx, yyy, "pix" + e.data.substring(6), true);
+		}else if(e.data.startsWith("#EnemyGiveUp")){
+			HexProject.namespace.myText.innerText ="Enemy Leave."
+			HexProject.namespace.gameEnd();
+			HexProject.namespace.btnRestart.disabled = true;
+		}else if(e.data.startsWith("#Surrender")){
+			HexProject.namespace.myText.innerText ="Enemy Give up."
+			HexProject.namespace.gameEnd();
+		}
+		else if(e.data.startsWith("#Undo")){
+			HexProject.namespace.undo(false);
+		}else if(e.data.startsWith("#ReStart")){
+			HexProject.namespace.initGame();
+			HexProject.namespace.myText.innerText ="Enemy first.(Red)"
+			HexProject.namespace.btnSurrender.disabled = false;
+		}
 	},
 	enterRoom : function () {
 		HexProject.namespace.myColor = "Blue";
@@ -341,14 +391,9 @@ HexProject.namespace = {
 				HexProject.namespace.size = parseInt(e.data.substring(10));
 				HexProject.namespace.initGame();
 				HexProject.namespace.myText.innerText ="Enemy first.(Red)"
-			}else if(e.data.startsWith("#Place")){
-				var xxx = parseInt(e.data.substring(6,e.data.indexOf("_")));
-				var yyy = parseInt(e.data.substring(1+e.data.indexOf("_")));
-				HexProject.namespace.clicks(xxx,yyy,"pix"+e.data.substring(6),true);
-			}else if(e.data.startsWith("#EnemyGiveUp")){
-				HexProject.namespace.myText.innerText = "Enemy Give up!";
-				HexProject.namespace.myText.style.color = "Blue";
-			}			
+				HexProject.namespace.btnSurrender.disabled = false;
+			}
+			HexProject.namespace.serverMsgCheck(e);
 		};
 		HexProject.namespace.ws.onerror = function(e){
 			console.log(e.data);
@@ -360,18 +405,47 @@ HexProject.namespace = {
 	},
 	surrender : function(){
 		HexProject.namespace.ws.send('<Surrender>' + HexProject.namespace.myColor);
-		HexProject.namespace.end = true;
 		HexProject.namespace.myText.innerText = "You lose.";
+		HexProject.namespace.gameEnd();
 	},
-	undo : function(){
+	undo : function(isMe){
+		console.log('undo');
+		console.log(HexProject.namespace.lastx);
+		console.log(HexProject.namespace.lasty);
+		console.log(HexProject.namespace.game[HexProject.namespace.lastx][HexProject.namespace.lasty]);
+		HexProject.namespace.game[HexProject.namespace.lastx][HexProject.namespace.lasty] = '';
+		HexProject.namespace.fillColorFull(HexProject.namespace.lastx,HexProject.namespace.lasty,'#eee');
+		HexProject.namespace.game[HexProject.namespace.lastx][HexProject.namespace.lasty] = '';
+		console.log(HexProject.namespace.game[HexProject.namespace.lastx][HexProject.namespace.lasty]);
+		HexProject.namespace.lastx = 0;
+		HexProject.namespace.lasty = 0;
+		if("Red" == HexProject.namespace.color){
+			HexProject.namespace.color = "Blue";
+		}else{
+			HexProject.namespace.color = "Red";
+		}
+		if(isMe)
+			HexProject.namespace.myText.innerText ="It's your turn.(" + HexProject.namespace.color + ")"
+		else
+			HexProject.namespace.myText.innerText="Enemy undo the move.";
 		HexProject.namespace.myTurn = !HexProject.namespace.myTurn;
-		
+		HexProject.namespace.resize();
 	},
 	undoClick : function(){
+		console.log("undoClick");
+		if(!HexProject.namespace.canUndo)
+			return;
+		HexProject.namespace.btnUndo.disabled = true; 
 		HexProject.namespace.ws.send('<Undo>'+HexProject.namespace.lastx+"_"+HexProject.namespace.lasty);
-		HexProject.namespace.undo();
+		HexProject.namespace.undo(true);
+		HexProject.namespace.canUndo = false;
 	},
 	restart : function(){
-		
+		HexProject.namespace.ws.send('<ReStart>');
+		HexProject.namespace.initGame();
+		HexProject.namespace.myColor = "Red";
+		HexProject.namespace.myText.innerText ="You first.(Red)"
+		HexProject.namespace.myTurn = true;
+		HexProject.namespace.btnSurrender.disabled = false;
 	}
 };
