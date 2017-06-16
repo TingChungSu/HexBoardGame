@@ -68,7 +68,7 @@ HexProject.namespace = {
 		
 		HexProject.namespace.myText = document.getElementById("Title");
 		HexProject.namespace.myText.style.color = "white";
-		HexProject.namespace.myText.innerText = "NewGame or Enter."
+		HexProject.namespace.myText.innerText = "NewGame or Enter.";
 		
 		HexProject.namespace.myColor = 'Red';
 		HexProject.namespace.myTurn = false;
@@ -233,7 +233,7 @@ HexProject.namespace = {
 				HexProject.namespace.color = "Red";
 			}
 			var who = canAction?'your':'enemy';
-			HexProject.namespace.myText.innerText ="It's "+ who +" turn.(" + HexProject.namespace.color + ")"
+			HexProject.namespace.myText.innerText ="It's "+ who +" turn.(" + HexProject.namespace.color + ")";
 			if(!canAction){
 				HexProject.namespace.canUndo = true;
 				HexProject.namespace.btnUndo.disabled = false; 
@@ -318,7 +318,9 @@ HexProject.namespace = {
 	},
 	help : function(){
 		var strText = 
-		"Press F2 or Start button to start a new Game."
+		"Press NewGame to create a new GameRoom or search Enemy."
+		+"\n\n"+
+		"Press Enter to enter a GameRoom."
 		+"\n\n"+
 		"Players alternate placing stones on unoccupied spaces "
 		+
@@ -327,10 +329,11 @@ HexProject.namespace = {
 		"the board in an unbroken chain."
 		+"\n\n"+
 		"LeftClick an empty space to place your stones."
-		+"\n\n"
+		+"\n\n";
 		window.alert(strText);
 	}, 
 	createRoom : function (){
+		HexProject.namespace.closeWS(HexProject.namespace.ws);
 		HexProject.namespace.initGame();
 		HexProject.namespace.myColor = "Red";
 		HexProject.namespace.ws = new WebSocket('ws://'+HexProject.namespace.url);
@@ -353,33 +356,12 @@ HexProject.namespace = {
 			console.log(e.data);
 		};
 		HexProject.namespace.ws.onclose = function(e){
-			console.log("connection closed by server.");
+			console.log("connection closed.");
 			console.log(e.data);
 		};
 	},
-	serverMsgCheck : function (e) {
-		if(e.data.startsWith("#Place")){
-			var xxx = parseInt(e.data.substring(6, e.data.indexOf("_")));
-			var yyy = parseInt(e.data.substring(1 + e.data.indexOf("_")));
-			HexProject.namespace.clicks(xxx, yyy, "pix" + e.data.substring(6), true);
-		}else if(e.data.startsWith("#EnemyGiveUp")){
-			HexProject.namespace.myText.innerText ="Enemy Leave."
-			HexProject.namespace.gameEnd();
-			HexProject.namespace.btnRestart.disabled = true;
-		}else if(e.data.startsWith("#Surrender")){
-			HexProject.namespace.myText.innerText ="Enemy Give up."
-			HexProject.namespace.gameEnd();
-		}
-		else if(e.data.startsWith("#Undo")){
-			HexProject.namespace.undo(false);
-		}else if(e.data.startsWith("#ReStart")){
-			HexProject.namespace.initGame();
-			HexProject.namespace.myText.innerText ="Enemy first.(Red)"
-			HexProject.namespace.btnSurrender.disabled = false;
-		}
-	},
 	enterRoom : function () {
-		HexProject.namespace.myColor = "Blue";
+		HexProject.namespace.closeWS(HexProject.namespace.ws);
 		HexProject.namespace.ws = new WebSocket('ws://'+HexProject.namespace.url);
 		HexProject.namespace.ws.onopen = function(e){
 			console.log("connection open. enterRoom");
@@ -390,8 +372,9 @@ HexProject.namespace = {
 			if(e.data.startsWith("#GameStart")){
 				HexProject.namespace.size = parseInt(e.data.substring(10));
 				HexProject.namespace.initGame();
-				HexProject.namespace.myText.innerText ="Enemy first.(Red)"
+				HexProject.namespace.myText.innerText ="Enemy first.(Red)";
 				HexProject.namespace.btnSurrender.disabled = false;
+				HexProject.namespace.myColor = 'Blue';
 			}
 			HexProject.namespace.serverMsgCheck(e);
 		};
@@ -399,9 +382,56 @@ HexProject.namespace = {
 			console.log(e.data);
 		};
 		HexProject.namespace.ws.onclose = function(e){
-			console.log("connection closed by server.");
+			console.log("connection closed.");
 			console.log(e.data);
 		};
+	},
+	serverMsgCheck : function (e) {
+		if(e.data.startsWith("#Place")){
+			var xxx = parseInt(e.data.substring(6, e.data.indexOf("_")));
+			var yyy = parseInt(e.data.substring(1 + e.data.indexOf("_")));
+			HexProject.namespace.clicks(xxx, yyy, "pix" + e.data.substring(6), true);
+		}else if(e.data.startsWith("#Msg")){
+			var msg = e.data.substring(4);
+			if(msg == 'Heart'){
+				if(HexProject.namespace.myColor == 'Blue')
+					myCanvas.addObj('Heart','Red');
+				else
+					myCanvas.addObj('Heart','Blue');
+			}
+			if(msg == 'OOO'){
+				myCanvas.addObj('Smile');
+			}
+			if(msg == 'InvalidRoomId'){
+				HexProject.namespace.myText.innerText = 'Invalid RoomId!';
+			}
+		}else if(e.data.startsWith("#EnemyGiveUp")){
+			HexProject.namespace.myText.innerText ="Enemy Leave.";
+			HexProject.namespace.gameEnd();
+			HexProject.namespace.btnRestart.disabled = true;
+		}else if(e.data.startsWith("#Surrender")){
+			HexProject.namespace.myText.innerText ="Enemy Give up.";
+			HexProject.namespace.gameEnd();
+		}else if(e.data.startsWith("#Undo")){
+			HexProject.namespace.undo(false);
+		}else if(e.data.startsWith("#ReStart")){
+			HexProject.namespace.initGame();
+			HexProject.namespace.myText.innerText ="Enemy first.(Red)";
+			HexProject.namespace.btnSurrender.disabled = false;
+			HexProject.namespace.myColor = 'Blue';
+		}else if(e.data.startsWith("#RandomRoom")){
+			HexProject.namespace.size = 12;
+			HexProject.namespace.initGame();
+			HexProject.namespace.myColor = e.data.substring(11);
+			if(HexProject.namespace.myColor != 'Red'){
+				HexProject.namespace.myText.innerText ="Enemy first.(Red)";
+				HexProject.namespace.btnSurrender.disabled = false;
+			}else{
+				HexProject.namespace.myText.innerText ="You first.(Red)"
+				HexProject.namespace.myTurn = true;
+				HexProject.namespace.btnSurrender.disabled = false;
+			}
+		}
 	},
 	surrender : function(){
 		HexProject.namespace.ws.send('<Surrender>' + HexProject.namespace.myColor);
@@ -425,7 +455,7 @@ HexProject.namespace = {
 			HexProject.namespace.color = "Red";
 		}
 		if(isMe)
-			HexProject.namespace.myText.innerText ="It's your turn.(" + HexProject.namespace.color + ")"
+			HexProject.namespace.myText.innerText ="It's your turn.(" + HexProject.namespace.color + ")";
 		else
 			HexProject.namespace.myText.innerText="Enemy undo the move.";
 		HexProject.namespace.myTurn = !HexProject.namespace.myTurn;
@@ -444,8 +474,40 @@ HexProject.namespace = {
 		HexProject.namespace.ws.send('<ReStart>');
 		HexProject.namespace.initGame();
 		HexProject.namespace.myColor = "Red";
-		HexProject.namespace.myText.innerText ="You first.(Red)"
+		HexProject.namespace.myText.innerText ="You first.(Red)";
 		HexProject.namespace.myTurn = true;
 		HexProject.namespace.btnSurrender.disabled = false;
+	},
+	msg : function(msg){
+		if(HexProject.namespace.ws)
+			HexProject.namespace.ws.send("<Msg>"+msg);
+	},
+	randomRoom : function(){
+		HexProject.namespace.size = 12;
+		HexProject.namespace.initGame();
+		HexProject.namespace.closeWS(HexProject.namespace.ws);
+		HexProject.namespace.myText.innerText ="Search Enemy...";
+		HexProject.namespace.ws = new WebSocket('ws://'+HexProject.namespace.url);
+		HexProject.namespace.ws.onopen = function(e){
+			console.log("connection open. randomRoom");
+			HexProject.namespace.ws.send("<RandomRoom>");
+		};
+		HexProject.namespace.ws.onmessage=function(e){
+			console.log(e.data);
+			HexProject.namespace.serverMsgCheck(e);
+		};
+		HexProject.namespace.ws.onerror = function(e){
+			console.log(e.data);
+		};
+		HexProject.namespace.ws.onclose = function(e){
+			console.log("connection closed.");
+			console.log(e.data);
+		};
+	},
+	closeWS : function(websocket){
+		if(websocket != null){
+			console.log("close socket");
+			websocket.send('<Bye>');
+		}
 	}
 };

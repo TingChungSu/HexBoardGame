@@ -1,5 +1,4 @@
 <!DOCTYPE html>
-
 <html>
 <head>
 	<title>Hex Game</title>
@@ -24,16 +23,22 @@
 				<span class="icon-bar"></span>
 				<span class="icon-bar"></span>
 			</button>
-			<a id="Title" class="navbar-brand" href="#" style="font-size: 125%">Hex Board Game</a>
+			<a id="Title" class="navbar-brand" style="font-size: 125%">Hex Board Game</a>
 		</div>
 		<div id="navbar" class="navbar-collapse collapse">
-			<ul class="nav navbar-nav">
-				<li><a onclick="HexProject.namespace.createRoom();">NewGame</a></li>
+			<ul class="nav navbar-nav">randomRoom
+				<li class="dropdown">
+					<a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">NewGame<span class="caret"></span></a>
+					<ul class="dropdown-menu">
+						<li class="btn-default" onclick="HexProject.namespace.createRoom();">Create Room</li>
+						<li class="btn-default" onclick="HexProject.namespace.randomRoom();">Random Enemy</li>
+					</ul>
+				</li>
 				<li class="dropdown">
 					<a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Enter <span class="caret"></span></a>
 					<ul class="dropdown-menu">
-						<li class="btn-default ">RoomId:<input type="number" id = "roomId"></li>
-						<li class="btn-primary" onclick="HexProject.namespace.enterRoom();">Enter</li>
+						<li>RoomId:<input type="number" id = "roomId"></li>
+						<li class="btn-default" onclick="HexProject.namespace.enterRoom();">Enter</li>
 					</ul>
 				</li>
 				<li><a onclick="HexProject.namespace.help();">About</a></li>
@@ -54,43 +59,50 @@
 <div id="GameBoard"></div>
 
 <div class="fixed">
+	<button id ="OOO" type="button" class="btn btn-primary" onclick="myCanvas.addObj('OOO',HexProject.namespace.myColor);
+	HexProject.namespace.msg('OOO')">:O</button>
+	<button id ="Heart" type="button" class="btn btn-primary" onclick="myCanvas.addObj('Heart',HexProject.namespace.myColor);
+	HexProject.namespace.msg('Heart')">Heart</button>
 	<button id ="undo" type="button" class="btn btn-primary" onclick="HexProject.namespace.undoClick();">undo</button>
 	<button id ="surrender" type="button" class="btn btn-primary" onclick="HexProject.namespace.surrender();">surrender</button>
 	<button id ="restart" type="button" class="btn btn-primary" onclick="HexProject.namespace.restart();">restart</button>
 </div>
-
-<canvas id="canvas"></canvas >
+<canvas id="myCanvas" class="full"></canvas>
 </body>
 <script src="./jquery-1.12.0.min.js"></script>
 <script src="./bootstrap-3.3.6-dist/js/bootstrap.min.js"></script>
 <script src="./HexProject.js"></script>
+<script src="./FullScreenCanvas.js"></script>
 <script type="text/javascript">
+	var myCanvas = new newCanvas();
+	myCanvas.start();
 
-HexProject.namespace.initGame();
+	HexProject.namespace.initGame();
 
-window.addEventListener('resize', function(event){
-  // do stuff here
-  HexProject.namespace.resize();
-});
-
-Element.prototype.remove = function() {
-    this.parentElement.removeChild(this);
-}
-NodeList.prototype.remove = HTMLCollection.prototype.remove = function() {
-    for(var i = this.length - 1; i >= 0; i--) {
-        if(this[i] && this[i].parentElement) {
-            this[i].parentElement.removeChild(this[i]);
-        }
-    }
-}
-$(document).ready(function(){ 
-	$(window).keydown(function(event){
-		console.log("key "+event.keyCode+" pressed.");
-		//press f2
-		if(event.keyCode == 113){
-			HexProject.namespace.initGame();
-		}
+	window.addEventListener('resize', function(event){
+	  // do stuff here
+	  HexProject.namespace.resize();
+	  myCanvas.resize();
 	});
-});
+
+	Element.prototype.remove = function() {
+		this.parentElement.removeChild(this);
+	}
+	NodeList.prototype.remove = HTMLCollection.prototype.remove = function() {
+		for(var i = this.length - 1; i >= 0; i--) {
+			if(this[i] && this[i].parentElement) {
+				this[i].parentElement.removeChild(this[i]);
+			}
+		}
+	}
+	$(document).ready(function(){ 
+		$(window).keydown(function(event){
+			console.log("key "+event.keyCode+" pressed.");
+			//press f2
+			if(event.keyCode == 113){
+				HexProject.namespace.initGame();
+			}
+		});
+	});
 </script>
 </html>
