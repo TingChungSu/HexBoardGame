@@ -1,0 +1,5 @@
+c:\users\dingy\documents\visual studio 2015\Projects\MyWebeSocket\MyWebeSocket\bin\Debug\MyWebeSocket.exe.config
+c:\users\dingy\documents\visual studio 2015\Projects\MyWebeSocket\MyWebeSocket\bin\Debug\MyWebeSocket.exe
+c:\users\dingy\documents\visual studio 2015\Projects\MyWebeSocket\MyWebeSocket\bin\Debug\MyWebeSocket.pdb
+c:\users\dingy\documents\visual studio 2015\Projects\MyWebeSocket\MyWebeSocket\obj\Debug\MyWebeSocket.exe
+c:\users\dingy\documents\visual studio 2015\Projects\MyWebeSocket\MyWebeSocket\obj\Debug\MyWebeSocket.pdb
