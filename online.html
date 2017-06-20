@@ -11,50 +11,47 @@
     <link href="./hex.css" rel="stylesheet">
 </head>
 
-<body id="body" role = "document" onselectstart="return false;" oncontextmenu="window.event.returnValue=false" >
+	<body id="body" role = "document" onselectstart="return false;" oncontextmenu="window.event.returnValue=false" >
 
-	<!-- Fixed navbar -->
-    <nav class="navbar navbar-inverse navbar-fixed-top">
-	<div class="container">
-		<div class="navbar-header">
-			<button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false" aria-controls="navbar">
-				<span class="sr-only">Toggle navigation</span>
-				<span class="icon-bar"></span>
-				<span class="icon-bar"></span>
-				<span class="icon-bar"></span>
-			</button>
-			<a id="Title" class="navbar-brand" style="font-size: 125%">Hex Board Game</a>
-		</div>
-		<div id="navbar" class="navbar-collapse collapse">
-			<ul class="nav navbar-nav">randomRoom
-				<li class="dropdown">
-					<a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">NewGame<span class="caret"></span></a>
-					<ul class="dropdown-menu">
-						<li class="btn-default" onclick="HexProject.namespace.createRoom();">Create Room</li>
-						<li class="btn-default" onclick="HexProject.namespace.randomRoom();">Random Enemy</li>
-					</ul>
-				</li>
-				<li class="dropdown">
-					<a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Enter <span class="caret"></span></a>
-					<ul class="dropdown-menu">
-						<li>RoomId:<input type="number" id = "roomId"></li>
-						<li class="btn-default" onclick="HexProject.namespace.enterRoom();">Enter</li>
-					</ul>
-				</li>
-				<li><a onclick="HexProject.namespace.help();">About</a></li>
-				<li class="dropdown">
-					<a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Setting <span class="caret"></span></a>
-					<ul class="dropdown-menu">
-						<li class="btn-default ">Size:<input type="number" value = 10 id = "number" min="5" max="15"></li>
-						<li class="btn-primary" onclick="HexProject.namespace.setDifficulty();HexProject.namespace.initGame();">Start</li>
-					</ul>
-				</li>
-			</ul>
-		</div><!--/.nav-collapse -->
-	</div>
-    </nav>
-<div>
-	<div id="text"></div>
+		<!-- Fixed navbar -->
+		<nav class="navbar navbar-inverse navbar-fixed-top ">
+			
+			<div class = "col-xs-1 right">
+				<ul class="nav navbar-nav right">
+					<li class="dropdown">
+						<a class="dropdown-toggle" data-toggle="dropdown">
+							<span class="glyphicon glyphicon-menu-hamburger"></span>
+						</a>
+						<ul class="dropdown-menu" role="menu" >
+							<li><a onclick="HexProject.namespace.help();">About</a></li>
+							<li class="dropdown-submenu">
+								<a class="dropdown-toggle" data-toggle="dropdown" aria-haspopup="false" aria-expanded="false">NewGame<span class="caret"></span></a>
+								<ul class="dropdown-menu">
+									<li class="btn-default" onclick="HexProject.namespace.createRoom();">Create Room</li>
+									<li class="btn-default" onclick="HexProject.namespace.randomRoom();">Search Enemy</li>
+								</ul>
+							</li>
+							<li class="dropdown-submenu">
+								<a class="dropdown-toggle" data-toggle="dropdown" aria-haspopup="false" aria-expanded="false">Enter <span class="caret"></span></a>
+								<ul class="dropdown-menu">
+									<li class="btn-default" onclick="HexProject.namespace.enterRoom();">RoomId:<input type="number" id = "roomId">Enter</li>
+								</ul>
+							</li>
+							<li class="dropdown-submenu">
+								<a class="dropdown-toggle" data-toggle="dropdown" aria-haspopup="false" aria-expanded="false">Setting <span class="caret"></span></a>
+								<ul class="dropdown-menu">
+									<li class="btn-default" onclick="HexProject.namespace.setDifficulty();HexProject.namespace.initGame();">Size:<input type="number" value = 10 id = "number" min="5" max="15">Start</li>
+								</ul>
+							</li>
+						</ul>
+					</li>
+				</ul>
+			</div>
+			<a id="Title" class="navbar-brand col-xs-11" style="font-size: 200%;">Hex Board Game</a>
+		</nav>
+	<div>
+	
+
 </div>
 <div id="GameBoard"></div>
 

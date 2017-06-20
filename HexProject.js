@@ -1,7 +1,7 @@
 var HexProject = HexProject || {};
 HexProject.namespace = {
-    url : '10.0.1.167:8080',
-	//url : '140.116.247.163:8080',
+    //url : '10.0.1.167:8080',
+	url : '140.116.247.163:8080',
 	myColor : 'Red',
 	myTurn : false,
 	size : 12,
@@ -486,7 +486,7 @@ HexProject.namespace = {
 		HexProject.namespace.size = 12;
 		HexProject.namespace.initGame();
 		HexProject.namespace.closeWS(HexProject.namespace.ws);
-		HexProject.namespace.myText.innerText ="Search Enemy...";
+		HexProject.namespace.myText.innerText ="Searching Enemy...";
 		HexProject.namespace.ws = new WebSocket('ws://'+HexProject.namespace.url);
 		HexProject.namespace.ws.onopen = function(e){
 			console.log("connection open. randomRoom");
